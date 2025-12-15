@@ -14,3 +14,4 @@ RUN set -eux; \
 USER haproxy
 
 ENTRYPOINT ["/all/bin/release/linux/x64/roblox-load-balancer-daemon"]
+CMD ["/all/bin/release/linux/x64/roblox-load-balancer-daemon"]
