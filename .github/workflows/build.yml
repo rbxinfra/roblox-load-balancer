@@ -1,0 +1,63 @@
+name: "Build + Publish NuGet Package"
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - "src/**"
+      - ".github/workflows/**"
+      - "*.sln"
+
+  push:
+    branches:
+      - master
+    paths:
+      - "src/**"
+      - ".github/workflows/**"
+      - "*.sln"
+
+env:
+  DOTNET_NOLOGO: true
+
+jobs:
+  get-head-commit-message:
+    runs-on: "ubuntu-latest"
+
+    outputs:
+     head-commit-message: ${{ steps.get-head-commit-details.outputs.head-commit }}
+
+    steps:
+      # Setup
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Get Head Commit message
+        id: get-head-commit-details
+        run: >
+          {
+            echo 'head-commit<<EOF'
+            git log -1 --pretty=%B
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+  build:
+    runs-on: "ubuntu-latest"
+    if: ${{ !contains(needs.get-head-commit-message.outputs.head-commit-message, '#!skip-build!#') }}
+
+    needs: get-head-commit-message
+
+    steps:
+      # Setup
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup the Golang environment with version 1.20.x
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.20.x
+
+      - name: Build roblox-load-balancer
+        run: make build-release PROJECT_NAME=roblox-load-balancer
+

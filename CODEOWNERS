@@ -1,0 +1,5 @@
+/.github/ @rbxinfra/platform-ci
+/scripts/ @rbxinfra/platform-ci
+
+CODEOWNERS @rbxinfra/traffic-team
+/src/ @rbxinfra/traffic-team

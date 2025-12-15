@@ -1,0 +1,68 @@
+name: Build Docker Image
+
+on:
+  push:
+    paths:
+      - "server/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+      - "Dockerfile"
+      - "Makefile"
+      - ".dockerignore"
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Image Name"
+        required: true
+        default: "docker.artifactory.rbx.com/traffic-team/roblox-load-balancer"
+      registry:
+        description: "Docker Registry"
+        required: true
+        default: "docker.artifactory.rbx.com"
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message, '#!skip-build!#') }}
+
+    runs-on: rbx-local
+    env:
+      IMAGE: ${{ github.event.inputs.image || 'docker.artifactory.rbx.com/traffic-team/roblox-load-balancer' }}
+      DOCKER_REGISTRY: ${{ github.event.inputs.registry || 'docker.artifactory.rbx.com' }}
+
+      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Generate version and allow it as an output
+      - name: Generate Version
+        id: version
+        run: |
+          DATE=$(date +"%Y.%m.%d-%H.%M.%S")
+
+          # Format: yyyy.mm.dd-hh.mm.ss-<short sha>
+          VERSION="$DATE-$(echo $GITHUB_SHA | cut -c1-7)"
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Image
+        if: ${{ env.DOCKER_REGISTRY && env.DOCKER_USERNAME && env.DOCKER_PASSWORD }}
+        id: image
+        run: |
+          echo "${{ env.DOCKER_PASSWORD }}" | docker login -u "${{ env.DOCKER_USERNAME }}" --password-stdin "${{ env.DOCKER_REGISTRY }}"
+
+          docker build -t ${{ env.IMAGE }}:${{ steps.version.outputs.version }} .
+
+          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            docker tag ${{ env.IMAGE }}:${{ steps.version.outputs.version }} ${{ env.IMAGE }}:latest
+          fi
+
+          docker push ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+
+          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            docker push ${{ env.IMAGE }}:latest
+          fi
