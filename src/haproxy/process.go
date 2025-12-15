@@ -57,6 +57,8 @@ func ReloadHAProxyConfiguration(config *configuration.Config) error {
 	glog.Infof("Reloading HAProxy configuration!")
 
 	if _, err := os.Stat(config.OutputFilePath); errors.Is(err, os.ErrNotExist) {
+		glog.Infof("Output file does not exist, not reloading configuration")
+
 		return nil // Take the case of initial config as not exist.
 	}
 
@@ -65,6 +67,8 @@ func ReloadHAProxyConfiguration(config *configuration.Config) error {
 	}
 
 	if haproxyRunning() {
+		glog.Infof("Sending SIGHUP to HAProxy")
+
 		return gHAProxyProcess.Signal(syscall.SIGHUP)
 	}
 
