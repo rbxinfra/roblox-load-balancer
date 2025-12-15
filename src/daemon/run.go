@@ -68,7 +68,7 @@ func Run(config *configuration.Config) {
 			default:
 				services, err := UpdateHAProxyConfigurationFile(ctx, config)
 				if err != nil {
-					glog.Error(err)
+					glog.Errorf("Got error when updating HAProxy configuration file: %v", err)
 
 					continue
 				}
@@ -76,7 +76,10 @@ func Run(config *configuration.Config) {
 				if shouldReloadHAProxy(services) {
 					glog.Info("Reloading HAProxy configuration because of service changes.")
 
-					haproxy.ReloadHAProxyConfiguration(config)
+					err = haproxy.ReloadHAProxyConfiguration(config)
+					if err != nil {
+						glog.Errorf("Got error when reloading HAProxy configuration: %v", err)
+					}
 				} else {
 					glog.Warning("Got service update but no changes detected, skipping HAProxy reload.")
 				}
