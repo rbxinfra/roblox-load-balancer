@@ -1,7 +1,8 @@
 package haproxy
 
 import (
-	"fmt"
+	"errors"
+	"os"
 	"os/exec"
 
 	"github.rbx.com/roblox/roblox-load-balancer/configuration"
@@ -10,6 +11,7 @@ import (
 func validateHAProxyConfiguration(config *configuration.Config) error {
 	cmd := exec.Command(config.HAProxy.Path, "-c", "-f", config.OutputFilePath)
 	err := cmd.Start()
+	cmd.Stderr = os.Stderr
 	if err != nil {
 		return err
 	}
@@ -24,5 +26,5 @@ func validateHAProxyConfiguration(config *configuration.Config) error {
 		return nil
 	}
 
-	return fmt.Errorf("Invalid HAProxy configuration specified.")
+	return errors.New("invalid HAProxy configuration specified.")
 }
