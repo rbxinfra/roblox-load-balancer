@@ -31,11 +31,11 @@ func validateLabelsConfig(config *types.ServiceConfig, entryPoints map[string]*c
 	}
 
 	if config.Be == nil {
-		config.Be = &types.BackendConfiguration{}
+		config.Be = new(types.BackendConfiguration)
 	}
 
 	if config.Fe == nil {
-		config.Fe = &types.FrontendConfiguration{}
+		config.Fe = new(types.FrontendConfiguration)
 	}
 
 	if config.Be.Balance == "" {
