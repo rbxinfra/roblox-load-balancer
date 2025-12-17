@@ -20,6 +20,22 @@ type HAProxyConfig struct {
 	// Defaults to "-W", "-db", "-f", $OUTPUT_FILE_PATH
 	Args []string `json:"args" yaml:"args" toml:"args"`
 
+	// StdoutLogFilePath is the path to HAProxy's STDOUT log file.
+	//
+	// Defaults to "/var/log/haproxy/stdout"
+	StdoutLogFilePath string `json:"stdoutLogFilePath" yaml:"stdout_log_file_path" toml:"stdout_log_file_path"`
+
+	// StderrLogFilePath is the path to HAProxy's STDERR log file.
+	//
+	// Defaults to "/var/log/haproxy/stderr"
+	StderrLogFilePath string `json:"stderrLogFilePath" yaml:"stderr_log_file_path" toml:"stderr_log_file_path"`
+
+	// MaxStartAttempts is the maximum number of attempts
+	// to start HAProxy before giving up.
+	//
+	// Defaults to 3
+	MaxStartAttempts *int `json:"maxStartAttempts" yaml:"max_start_attempts" toml:"max_start_attempts"`
+
 	// Env specifies the environment of the process.
 	// Each entry is of the form "key=value".
 	// If Env is nil, the new process uses the current process's

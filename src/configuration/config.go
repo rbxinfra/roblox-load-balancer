@@ -1,5 +1,7 @@
 package configuration
 
+import "time"
+
 // Config represents the configuration for
 // the HAProxy config builder.
 type Config struct {
@@ -21,6 +23,11 @@ type Config struct {
 	// Defaults to /usr/local/etc/haproxy/haproxy.cfg
 	OutputFilePath string `json:"outputFilePath" yaml:"output_file_path" toml:"output_file_path"`
 
+	// RefreshInterval is the refresh interval for each run of the Daemon.
+	//
+	// Defaults to 5m
+	RefreshInterval *time.Duration `json:"refreshInterval" yaml:"refresh_interval" toml:"refresh_interval"`
+
 	// TLSBundleFilePath is the path to the TLS bundle used
 	// to verify TLS requests to backends.
 	TLSBundleFilePath string `json:"tlsBundleFilePath" yaml:"tls_bundle_file_path" toml:"tls_bundle_file_path"`
@@ -33,6 +40,7 @@ type Config struct {
 	// for a service, or a default configuration for all services.
 	HealthChecks map[string]*HealthCheckConfig `json:"healthChecks" yaml:"health_checks" toml:"health_checks"`
 
+	// ServersConfig is the configuration for both default-server and per server.
 	ServersConfig *ServersConfig `json:"servers" yaml:"servers" toml:"servers"`
 
 	// Consul represents the Consul configuration options.

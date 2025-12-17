@@ -25,7 +25,7 @@ type ConsulTLSConfig struct {
 
 	// CAPath is the optional path to a directory of CA certificates to use for
 	// Consul communication, defaults to the system bundle if not specified.
-	CAPath string `json:"caPath" yaml:"ca_path" toml:"ca_path"` 
+	CAPath string `json:"caPath" yaml:"ca_path" toml:"ca_path"`
 
 	// CAPem is the optional PEM-encoded CA certificate used for Consul
 	// communication, defaults to the system bundle if not specified.
@@ -71,7 +71,7 @@ type ConsulConfig struct {
 
 	// HttpAuth is the auth info to use for HTTP access.
 	HttpAuth *ConsulHttpBasicAuth `json:"httpAuth" yaml:"http_auth" toml:"http_auth"`
-	
+
 	// WaitTime limits how long a watch will block. If not provided,
 	// the agent default values will be used.
 	WaitTime time.Duration `json:"waitTime" yaml:"wait_time" toml:"wait_time"`
