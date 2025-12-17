@@ -1,6 +1,7 @@
 package consul
 
 import (
+	"github.com/golang/glog"
 	capi "github.com/hashicorp/consul/api"
 	"github.rbx.com/roblox/roblox-load-balancer/configuration"
 )
@@ -63,6 +64,8 @@ func InitializeConsul(config *configuration.Config) error {
 			consulConfig.TLSConfig = capi.TLSConfig(*daemonConsulConfig.TLSConfig)
 		}
 	}
+
+	glog.Infof("Initializing Consul client for Address %s", consulConfig.Address)
 
 	client, err := capi.NewClient(consulConfig)
 	if err != nil {
