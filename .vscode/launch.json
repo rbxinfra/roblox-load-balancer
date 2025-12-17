@@ -10,8 +10,11 @@
             "request": "launch",
             "mode": "debug",
             "program": "./src/main.go",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
             "args": [
-                "--configuration-file-path=${workspaceFolder}/config/Test.yml"
+                "--configuration-file-path=${workspaceFolder}/config/Test.yml",
+                "-v=10000"
             ]
         }
 

@@ -18,7 +18,7 @@ func SetupFlags(applicationName, buildMode, commitSha string) {
 		}
 
 		flag.Set("logtostderr", "true")
-        flag.Set("v", "50")
+		flag.Set("v", "50")
 
 		flag.Parse()
 	})

@@ -46,7 +46,7 @@ func main() {
 	}
 
 	if *flags.DryRun {
-		glog.Infof("Doing dry-run to load initial configuration...")
+		glog.Infoln("Doing dry-run to load initial configuration...")
 
 		_, err := daemon.UpdateHAProxyConfigurationFile(context.Background(), config)
 		if err != nil {
@@ -58,32 +58,28 @@ func main() {
 		return
 	}
 
-	if err := haproxy.RecoverHAProxyProcess(config); err != nil {
-		glog.Fatal(err)	
-		
-		os.Exit(1)
-	}
-
-	if err := haproxy.ReloadHAProxyConfiguration(config); err != nil { // Only works if config exists already
+	if err := haproxy.InitializeHAProxy(config); err != nil {
 		glog.Error(err)
 
 		os.Exit(1)
 	}
-	
+
 	go daemon.Run(config)
+	go daemon.HandleRemoteRefreshRequest()
 
 	osSignal := make(chan os.Signal, 1)
 	signal.Notify(osSignal, syscall.SIGABRT, syscall.SIGINT, syscall.SIGTERM)
-	defer func ()  {
+	defer func() {
 		sig := <-osSignal
 
 		daemon.Exit()
 
-		haproxy.KillHAProxy()
-		glog.Flush()
+		haproxy.TeardownHAProxy()
 		close(osSignal)
 
 		glog.Warningf("Recevied signal %s, exiting", sig)
+		glog.Flush()
+
 		os.Exit(0)
 	}()
 }
