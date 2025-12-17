@@ -60,6 +60,9 @@ github.com/mitchellh/go-ps
 ## explicit; go 1.22.0
 github.com/traefik/paerser/parser
 github.com/traefik/paerser/types
+# github.com/xcdb/syncx v0.0.0-20180619214804-2387d6947dea
+## explicit
+github.com/xcdb/syncx
 # golang.org/x/exp v0.0.0-20250808145144-a408d31f581a
 ## explicit; go 1.23.0
 golang.org/x/exp/slices

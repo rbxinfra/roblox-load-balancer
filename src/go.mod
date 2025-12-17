@@ -8,6 +8,7 @@ require (
 	github.com/hashicorp/consul/api v1.33.0
 	github.com/mitchellh/go-ps v1.0.0
 	github.com/traefik/paerser v0.2.2
+	github.com/xcdb/syncx v0.0.0-20180619214804-2387d6947dea
 	gopkg.in/yaml.v3 v3.0.1
 )
 
