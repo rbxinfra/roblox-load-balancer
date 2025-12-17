@@ -14,7 +14,7 @@ import (
 // UpdateHAProxyConfigurationFile updates the HAProxy configuration file
 // from Consul and returns the current services.
 func UpdateHAProxyConfigurationFile(ctx context.Context, config *configuration.Config) ([]*types.Service, error) {
-	glog.Info("Trying to update HAProxy configuration from Consul.")
+	glog.V(100).Infoln("Trying to update HAProxy configuration from Consul.")
 
 	consulSvcs, err := services.FetchLatestServices(ctx, config)
 	if err != nil {
@@ -22,7 +22,7 @@ func UpdateHAProxyConfigurationFile(ctx context.Context, config *configuration.C
 	}
 
 	if len(consulSvcs) == 0 {
-		glog.Warning("Consul returned an empty list of services, no backends will be routed!")
+		glog.V(100).Infoln("Consul returned an empty list of services, no backends will be routed!")
 	}
 
 	svcs, err := services.ParseServicesFromConsul(consulSvcs, config)
@@ -38,7 +38,7 @@ func UpdateHAProxyConfigurationFile(ctx context.Context, config *configuration.C
 		return nil, err
 	}
 
-	glog.Infof("Writing parsed HAProxy configuration file to %s", config.OutputFilePath)
+	glog.V(100).Infof("Writing parsed HAProxy configuration file to %s", config.OutputFilePath)
 
 	outputFile, err := os.OpenFile(config.OutputFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {

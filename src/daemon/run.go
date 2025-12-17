@@ -2,9 +2,13 @@ package daemon
 
 import (
 	"context"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	"github.com/golang/glog"
+	"github.com/xcdb/syncx"
 	"github.rbx.com/roblox/roblox-load-balancer/configuration"
 	"github.rbx.com/roblox/roblox-load-balancer/haproxy"
 	"github.rbx.com/roblox/roblox-load-balancer/services/types"
@@ -15,6 +19,10 @@ var (
 	gDaemonCloseSignal     chan struct{} = make(chan struct{}, 1)
 	gDaemonCloseSignalWait sync.WaitGroup
 	gContextCancelFunc     context.CancelFunc
+
+	gRefreshSignal     chan os.Signal
+	gRefreshCancelFunc context.CancelFunc
+	gRefreshEvent      *syncx.ManualResetEvent
 
 	gLastServicesList []*types.Service
 )
@@ -50,10 +58,37 @@ func shouldReloadHAProxy(currentServices []*types.Service) bool {
 	return true
 }
 
+// HandleRemoteRefreshRequest handles any SIGUSR1 commands.
+func HandleRemoteRefreshRequest() {
+	glog.Infoln("Handling SIGUSR1 requests...")
+
+	gDaemonCloseSignalWait.Add(1)
+
+	for {
+		gRefreshSignal = make(chan os.Signal, 1)
+		signal.Notify(gRefreshSignal, syscall.SIGUSR1)
+		sig := <-gRefreshSignal
+		if sig == nil {
+			signal.Stop(gRefreshSignal)
+
+			break
+		}
+
+		glog.Infoln("Received a SIGUSR1, doing manual configuration reload...")
+		gRefreshEvent.Signal()
+
+		signal.Stop(gRefreshSignal)
+	}
+
+	gDaemonCloseSignalWait.Done()
+}
+
 // Run starts the main Daemon process.
 func Run(config *configuration.Config) {
 	gDaemonOnceFlag.Do(func() {
-		glog.Infof("Starting daemon thread!")
+		glog.Infoln("Starting daemon thread!")
+
+		gRefreshEvent = syncx.NewManualResetEvent(false)
 
 		gDaemonCloseSignalWait.Add(1)
 		ctx, cancel := context.WithCancel(context.Background())
@@ -66,27 +101,37 @@ func Run(config *configuration.Config) {
 			case <-gDaemonCloseSignal:
 				break daemon_loop
 			default:
+				timeoutContext, cancel := context.WithTimeout(context.Background(), *config.RefreshInterval)
+				gRefreshCancelFunc = cancel
+
 				services, err := UpdateHAProxyConfigurationFile(ctx, config)
 				if err != nil {
 					glog.Errorf("Got error when updating HAProxy configuration file: %v", err)
 
-					continue
+					goto refresh_wait
 				}
 
 				if shouldReloadHAProxy(services) {
-					glog.Info("Reloading HAProxy configuration because of service changes.")
+					glog.Infoln("Reloading HAProxy because of service changes.")
 
-					err = haproxy.ReloadHAProxyConfiguration(config)
+					err = haproxy.ReloadHAProxy(config)
 					if err != nil {
-						glog.Errorf("Got error when reloading HAProxy configuration: %v", err)
+						glog.Errorf("Got error when reloading HAProxy: %v", err)
 					}
 				} else {
-					glog.Warning("Got service update but no changes detected, skipping HAProxy reload.")
+					glog.V(100).Infoln("Got service update but no changes detected, skipping HAProxy reload.")
 				}
+
+			refresh_wait:
+
+				glog.V(100).Infof("Sleeping for %s...", *config.RefreshInterval)
+
+				gRefreshEvent.WaitContext(timeoutContext)
+				gRefreshEvent.Reset()
 			}
 		}
 
-		glog.Infof("Exiting daemon thread!")
+		glog.Infoln("Exiting daemon thread!")
 
 		gDaemonCloseSignalWait.Done()
 	})
@@ -94,7 +139,13 @@ func Run(config *configuration.Config) {
 
 // Exit signals to the daemon thread to stop working.
 func Exit() {
-	gContextCancelFunc()
-	gDaemonCloseSignal <- struct{}{}
-	gDaemonCloseSignalWait.Wait()
+	glog.Infoln("Exit requested, signalling Daemon threads...")
+
+	gDaemonCloseSignal <- struct{}{} // Send a close event to daemon thread
+	gRefreshSignal <- nil            // Send a close event to sigusr1 thread
+
+	gRefreshCancelFunc() // Cancel a refresh
+	gContextCancelFunc() // Cancel any outgoing HTTP request
+
+	gDaemonCloseSignalWait.Wait() // Wait for thread to exit
 }
