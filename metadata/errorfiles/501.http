@@ -1,0 +1,9 @@
+HTTP/1.1 501 Not Implemented
+x-rblx-origin: lb
+cache-control: no-cache, no-store
+content-type: text/html
+connection: close
+
+<html><body><h1>501 Not Implemented</h1>
+Not Implemented <^)))<
+</body></html>

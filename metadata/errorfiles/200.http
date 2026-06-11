@@ -1,0 +1,9 @@
+HTTP/1.1 200 OK
+x-rblx-origin: lb
+cache-control: no-cache, no-store
+content-type: text/html
+connection: close
+
+<html><body><h1>200 OK</h1>
+OK <^)))<
+</body></html>

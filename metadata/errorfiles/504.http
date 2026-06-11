@@ -1,0 +1,9 @@
+HTTP/1.1 504 Gateway Timeout
+x-rblx-origin: lb
+cache-control: no-cache, no-store
+content-type: text/html
+connection: close
+
+<html><body><h1>504 Gateway Timeout</h1>
+Gateway Timeout <^)))<
+</body></html>

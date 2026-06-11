@@ -1,0 +1,9 @@
+HTTP/1.1 404 Not Found
+x-rblx-origin: lb
+cache-control: no-cache, no-store
+content-type: text/html
+connection: close
+
+<html><body><h1>404 File Not Found</h1>
+File Not Found <^)))<
+</body></html>

@@ -1,0 +1,9 @@
+HTTP/1.1 407 Proxy Authentication Required
+x-rblx-origin: lb
+cache-control: no-cache, no-store
+content-type: text/html
+connection: close
+
+<html><body><h1>407 Proxy Authentication Required</h1>
+Proxy Authentication Required <^)))<
+</body></html>

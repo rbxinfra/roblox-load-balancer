@@ -1,0 +1,9 @@
+HTTP/1.1 502 Bad Gateway
+x-rblx-origin: lb
+cache-control: no-cache, no-store
+content-type: text/html
+connection: close
+
+<html><body><h1>502 Bad Gateway</h1>
+Bad Gateway <^)))<
+</body></html>
