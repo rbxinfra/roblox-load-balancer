@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"sync/atomic"
 	"syscall"
 
 	"github.com/golang/glog"
@@ -23,6 +24,8 @@ var (
 	gRefreshSignal     chan os.Signal
 	gRefreshCancelFunc context.CancelFunc
 	gRefreshEvent      *syncx.ManualResetEvent
+
+	gManualRefresh atomic.Bool
 
 	gLastServicesList []*types.Service
 
@@ -45,6 +48,10 @@ func hashEquals(a, b []*types.Service) bool {
 }
 
 func shouldReloadHAProxy(currentServices []*types.Service) bool {
+	if gManualRefresh.CompareAndSwap(true, false) {
+		return true
+	}
+
 	if gLastServicesList == nil {
 		gLastServicesList = currentServices
 
@@ -72,6 +79,7 @@ func StartFsWatcher(config *configuration.Config) {
 	gFsWatcher = NewFileWatcher(config.ReloadOnChangesDetectedForFiles, func(path string) { 
 		glog.Infof("Change detected for file %s, reloading...", path)
 
+		gManualRefresh.Store(true)
 		gRefreshEvent.Signal()
 	})
 	gFsWatcher.Start()
@@ -94,6 +102,7 @@ func HandleRemoteRefreshRequest() {
 		}
 
 		glog.Infoln("Received a SIGUSR1, doing manual configuration reload...")
+		gManualRefresh.Store(true)
 		gRefreshEvent.Signal()
 
 		signal.Stop(gRefreshSignal)
