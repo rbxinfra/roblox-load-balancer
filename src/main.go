@@ -65,6 +65,7 @@ func main() {
 	}
 
 	go daemon.Run(config)
+	daemon.StartFsWatcher(config)
 	go daemon.HandleRemoteRefreshRequest()
 
 	osSignal := make(chan os.Signal, 1)

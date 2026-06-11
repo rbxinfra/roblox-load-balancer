@@ -23,6 +23,12 @@ type Config struct {
 	// Defaults to /usr/local/etc/haproxy/haproxy.cfg
 	OutputFilePath string `json:"outputFilePath" yaml:"output_file_path" toml:"output_file_path"`
 
+	// ReloadOnChangesDetectedForFiles is list of file paths to monitor for changes
+	// and will cause a reload of HAProxy to occur if one is detected.
+	//
+	// Useful for things like auto certificate changes in Sidecars to trigger a reload.
+	ReloadOnChangesDetectedForFiles []string `json:"reloadOnChangesDetectedForFiles" yaml:"reload_on_changes_detected_for_files" toml:"reload_on_changes_detected_for_files"`
+
 	// RefreshInterval is the refresh interval for each run of the Daemon.
 	//
 	// Defaults to 5m

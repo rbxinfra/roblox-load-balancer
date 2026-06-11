@@ -25,6 +25,8 @@ var (
 	gRefreshEvent      *syncx.ManualResetEvent
 
 	gLastServicesList []*types.Service
+
+	gFsWatcher *fsWatcher
 )
 
 func hashEquals(a, b []*types.Service) bool {
@@ -56,6 +58,23 @@ func shouldReloadHAProxy(currentServices []*types.Service) bool {
 	gLastServicesList = currentServices
 
 	return true
+}
+
+// StartFsWatcher starts monitoring the files for changes
+// if any are specified
+func StartFsWatcher(config *configuration.Config) {
+	if len(config.ReloadOnChangesDetectedForFiles) == 0 {
+		return
+	}
+
+	glog.Infoln("Starting file-system watcher for files...")
+
+	gFsWatcher = NewFileWatcher(config.ReloadOnChangesDetectedForFiles, func(path string) { 
+		glog.Infof("Change detected for file %s, reloading...", path)
+
+		gRefreshEvent.Signal()
+	})
+	gFsWatcher.Start()
 }
 
 // HandleRemoteRefreshRequest handles any SIGUSR1 commands.
@@ -133,6 +152,9 @@ func Run(config *configuration.Config) {
 
 		glog.Infoln("Exiting daemon thread!")
 
+		if gFsWatcher != nil {
+			gFsWatcher.Stop()
+		}
 		gDaemonCloseSignalWait.Done()
 	})
 }

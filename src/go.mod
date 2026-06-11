@@ -4,6 +4,7 @@ go 1.25.3
 
 require (
 	github.com/BurntSushi/toml v1.4.0
+	github.com/fsnotify/fsnotify v1.10.1
 	github.com/golang/glog v1.2.5
 	github.com/hashicorp/consul/api v1.33.0
 	github.com/mitchellh/go-ps v1.0.0
