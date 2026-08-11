@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "src/**"
-      - ".github/workflows/**"
+      - ".github/workflows/upload.yml"
       - "Dockerfile"
       - "Makefile"
       - ".dockerignore"
@@ -15,20 +15,20 @@ on:
       image:
         description: "Image Name"
         required: true
-        default: "docker.artifactory.rbx.com/traffic-team/roblox-load-balancer"
+        default: "rbxinfra/roblox-load-balancer"
       registry:
         description: "Docker Registry"
         required: true
-        default: "docker.artifactory.rbx.com"
+        default: "docker.io"
 
 jobs:
   build:
     if: ${{ !contains(github.event.head_commit.message, '#!skip-build!#') }}
 
-    runs-on: rbx-local
+    runs-on: ubuntu-latest
     env:
-      IMAGE: ${{ github.event.inputs.image || 'docker.artifactory.rbx.com/traffic-team/roblox-load-balancer' }}
-      DOCKER_REGISTRY: ${{ github.event.inputs.registry || 'docker.artifactory.rbx.com' }}
+      IMAGE: ${{ github.event.inputs.image || 'rbxinfra/roblox-load-balancer' }}
+      DOCKER_REGISTRY: ${{ github.event.inputs.registry || 'docker.io' }}
 
       DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
